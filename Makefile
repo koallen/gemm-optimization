@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O3 -Wall
+CFLAGS=-O3 -Wall -DNDEBUG
 
 all: bin openblas
 
@@ -7,8 +7,12 @@ all: bin openblas
 bin:
 	mkdir -p bin
 
-openblas: driver.c
+openblas: driver.o
 	$(CC) -o bin/$@ $< -lopenblas
 
 test:
 	./bin/openblas
+
+.PHONY:
+clean:
+	rm -r bin *.o
