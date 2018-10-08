@@ -1,18 +1,17 @@
 CC=gcc
 CFLAGS=-O3 -Wall -DNDEBUG
 
-all: bin openblas
+.PHONY: test clean step0
 
-.PHONY:
-bin:
-	mkdir -p bin
+main: driver.o my_dgemm.o
+	$(CC) -o main $^ -lopenblas
 
-openblas: driver.o
-	$(CC) -o bin/$@ $< -lopenblas
+test: main
+	./main
 
-test:
-	./bin/openblas
+step0:
+	cp step0/my_dgemm.c .
+	make test
 
-.PHONY:
 clean:
-	rm -r bin *.o
+	rm -f main *.o
