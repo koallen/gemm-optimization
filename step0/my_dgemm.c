@@ -7,14 +7,14 @@
 #include "my_dgemm.h"
 
 void my_dgemm(int m,
-		int n,
-		int k,
-		double *A,
-		int lda,
-		double *B,
-		int ldb,
-		double *C,
-		int ldc)
+	int n,
+	int k,
+	double *A,
+	int lda,
+	double *B,
+	int ldb,
+	double *C,
+	int ldc)
 {
 	int i, j, p;
 	for (i = 0; i < m; i++)

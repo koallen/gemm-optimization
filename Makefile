@@ -1,10 +1,11 @@
 CC=gcc
 CFLAGS=-O3 -march=native -Wall -DNDEBUG
+BLASDIR=/home/koallen/blis
 
 .PHONY: test clean step0
 
 main: driver.o my_dgemm.o
-	$(CC) -o main $^ -lopenblas
+	$(CC) -o main $^ $(BLASDIR)/lib/*.a -lpthread -lm
 
 test: main
 	./main
