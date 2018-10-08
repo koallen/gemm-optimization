@@ -1,3 +1,9 @@
+/*
+ * DGEMM implementation in step0
+ *
+ * Objective:
+ *   - apply basic code optimizations
+ */
 #include "my_dgemm.h"
 
 void my_dgemm(int m,

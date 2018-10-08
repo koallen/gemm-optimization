@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O3 -Wall -DNDEBUG
+CFLAGS=-O3 -march=native -Wall -DNDEBUG
 
 .PHONY: test clean step0
 
