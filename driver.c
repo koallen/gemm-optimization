@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 	matrix_t* B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_ref = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_opt = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t* C_after = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	GenMatrix(A, MAX_SIZE);
 	GenMatrix(B, MAX_SIZE);
 #ifndef NDEBUG
@@ -71,12 +72,13 @@ int main(int argc, char** argv)
 #endif
 
 	size_t matrix_size;
-	printf("MNK\t OPT  \t REF\n");
+	printf("  MNK\t   OPT \t AFTER \t   REF\n");
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
-		double ref_time = 0.0, opt_time = 0.0;
+		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
 		memset(C_ref, 0, matrix_size * matrix_size * sizeof(matrix_t));
 		memset(C_opt, 0, matrix_size * matrix_size * sizeof(matrix_t));
+		memset(C_after, 0, matrix_size * matrix_size * sizeof(matrix_t));
 
 		// call the GEMM routine
 		for (int rep = 0; rep < REPETITIONS; ++rep)
@@ -90,6 +92,13 @@ int main(int argc, char** argv)
 			gettimeofday(&ref_end, NULL);
 			ref_time += GetSecond(ref_start, ref_end);
 
+			struct timeval after_start, after_end;
+			gettimeofday(&after_start, NULL);
+			after_step_gemm(matrix_size, matrix_size, matrix_size,
+					A, matrix_size, B, matrix_size, C_after, matrix_size);
+			gettimeofday(&after_end, NULL);
+			after_time += GetSecond(after_start, after_end);
+
 			struct timeval opt_start, opt_end;
 			gettimeofday(&opt_start, NULL);
 			my_dgemm(matrix_size, matrix_size, matrix_size,
@@ -99,8 +108,9 @@ int main(int argc, char** argv)
 		}
 		ref_time = ref_time / REPETITIONS;
 		opt_time = opt_time / REPETITIONS;
+		after_time = after_time / REPETITIONS;
 		double flops = (matrix_size * matrix_size / (1000.0 * 1000.0 * 1000.0)) * (2 * matrix_size);
-		printf("%5zd\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / ref_time);
+		printf("%5zd\t %5.2lf\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / after_time, flops / ref_time);
 
 		// validate the result
 		CheckMatrix(C_ref, C_opt, matrix_size);

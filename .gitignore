@@ -1,3 +1,4 @@
 *.o
 main
+/after_step.c
 /my_dgemm.c
