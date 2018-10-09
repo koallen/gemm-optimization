@@ -6,9 +6,9 @@
  */
 #include "my_dgemm.h"
 
-#define MC 64
-#define NC 64
-#define KC 64
+#define MC 32
+#define NC 32
+#define KC 32
 
 void after_step_gemm(int m,
 	int n,

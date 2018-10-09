@@ -5,6 +5,7 @@
 #include <cblas.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include <sys/time.h>
 #include <string.h>
 
@@ -12,9 +13,9 @@
 
 #define IDX(i, j) (i * matrix_size + j)
 
-#define MIN_SIZE 128
+#define MIN_SIZE 48
 #define MAX_SIZE 768
-#define STEP 32
+#define STEP 48
 #define REPETITIONS 3
 
 #define EPSILON 1e-10
@@ -42,7 +43,7 @@ void GenMatrix(matrix_t* matrix, size_t matrix_size)
 	for (int i = 0; i < matrix_size; ++i)
 		for (int j = 0; j < matrix_size; ++j)
 		{
-			matrix[IDX(i,j)] = (matrix_t)(i + j);
+			matrix[IDX(i,j)] = (matrix_t)(drand48());
 		}
 }
 
@@ -58,23 +59,28 @@ void CheckMatrix(matrix_t* A, matrix_t* B, size_t matrix_size)
 
 int main(int argc, char** argv)
 {
+	srand48(time(NULL));
 	// TODO: allocate cache line aligned matrices
+	int ret;
 	matrix_t* A = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
-	matrix_t* C_ref = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
-	matrix_t* C_opt = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
-	matrix_t* C_after = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t* C_ref = NULL;
+	ret = posix_memalign((void**)&C_ref, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t* C_opt = NULL;
+	ret = posix_memalign((void**)&C_opt, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t* C_after = NULL;
+	ret = posix_memalign((void**)&C_after, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	GenMatrix(A, MAX_SIZE);
 	GenMatrix(B, MAX_SIZE);
-#ifndef NDEBUG
-	PrintMatrix(A, matrix_size, "A");
-	PrintMatrix(B, matrix_size, "B");
-#endif
 
 	size_t matrix_size;
 	printf("  MNK\t   OPT \t AFTER \t   REF\n");
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
+#ifndef NDEBUG
+		PrintMatrix(A, matrix_size, "A");
+		PrintMatrix(B, matrix_size, "B");
+#endif
 		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
 		memset(C_ref, 0, matrix_size * matrix_size * sizeof(matrix_t));
 		memset(C_opt, 0, matrix_size * matrix_size * sizeof(matrix_t));
@@ -85,7 +91,7 @@ int main(int argc, char** argv)
 		{
 			struct timeval ref_start, ref_end;
 			gettimeofday(&ref_start, NULL);
-			cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+			cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
 					matrix_size, matrix_size, matrix_size,
 					1.0, A, matrix_size, B, matrix_size, 1.0,
 					C_ref, matrix_size);
