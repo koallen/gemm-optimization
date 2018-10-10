@@ -20,5 +20,5 @@ void my_dgemm(int m,
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n; j++)
 			for (p = 0; p < k; p++)
-				C[i * ldc + j] += A[i * lda + p] * B[p * ldb + j];
+				C[j * ldc + i] += A[p * lda + i] * B[j * ldb + p];
 }

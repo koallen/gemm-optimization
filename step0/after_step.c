@@ -17,23 +17,24 @@ void after_step_gemm(int m,
 	int ldc)
 {
 	int i, j, p;
-	for (i = 0; i < m; i++)
+	for (j = 0; j < n; j++)
 		for (p = 0; p < k; p++)
 		{
-			double* bp = B + p * ldb;
-			double* cp = C + i * ldc;
-			register double a = A[i * lda + p];
-			for (j = 0; j < n; j += 8)
+			// with j and p fixed, b is fixed
+			double* ap = A + p * lda;
+			double* cp = C + j * ldc;
+			register double b = B[j * ldb + p];
+			for (i = 0; i < m; i += 8)
 			{
-				*(cp+0) += a * *(bp+0);
-				*(cp+1) += a * *(bp+1);
-				*(cp+2) += a * *(bp+2);
-				*(cp+3) += a * *(bp+3);
-				*(cp+4) += a * *(bp+4);
-				*(cp+5) += a * *(bp+5);
-				*(cp+6) += a * *(bp+6);
-				*(cp+7) += a * *(bp+7);
-				bp += 8; cp += 8;
+				*(cp+0) += b * *(ap+0);
+				*(cp+1) += b * *(ap+1);
+				*(cp+2) += b * *(ap+2);
+				*(cp+3) += b * *(ap+3);
+				*(cp+4) += b * *(ap+4);
+				*(cp+5) += b * *(ap+5);
+				*(cp+6) += b * *(ap+6);
+				*(cp+7) += b * *(ap+7);
+				ap += 8; cp += 8;
 			}
 		}
 }
