@@ -64,21 +64,14 @@ static void PackB(int n,
 static void MacroKernel(int m, int n, int k, double *packed_a, double *packed_b, double *C, int ldc)
 {
 	int ir, jr; // used as index
-	int ib, jb; // used as block size
 
 	for (jr = 0; jr < n; jr += NR) // 2nd loop
-	{
-		jb = MIN(n - jr, NR);
 		for (ir = 0; ir < m; ir += MR) // 1st loop
-		{
-			ib = MIN(m - ir, MR);
 			MicroKernel(k,
 				&packed_a[ir * k],
 				&packed_b[jr * k],
 				&C[jr * ldc + ir],
 				ldc);
-		}
-	}
 }
 
 void my_dgemm(int m,
