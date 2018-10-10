@@ -12,16 +12,19 @@ test: main
 
 step0:
 	cp $@/my_dgemm.c .
+	cp $@/my_dgemm.h .
 	cp $@/after_step.c .
 	make test
 
 step1:
 	cp $@/my_dgemm.c .
+	cp $@/my_dgemm.h .
 	cp $@/after_step.c .
 	make test
 
 step2:
 	cp $@/my_dgemm.c .
+	cp $@/my_dgemm.h .
 	#cp $@/after_step.c .
 	make test
 
