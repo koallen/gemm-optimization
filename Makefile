@@ -25,6 +25,7 @@ step1:
 step2:
 	cp $@/my_dgemm.c .
 	cp $@/my_dgemm.h .
+	cp $@/micro_kernel.c .
 	#cp $@/after_step.c .
 	make test
 

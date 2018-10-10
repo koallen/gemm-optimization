@@ -3,20 +3,10 @@
  */
 #include <stdlib.h>
 #include "my_dgemm.h"
+#include "micro_kernel.c"
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
-
-#define NC 48
-#define KC 48
-#define MC 48
-#define NR 6
-#define MR 8
-
-/////////////////////////////////////////////////////////
-// TODO:
-//   - use ib, jb, and pb for block size
-/////////////////////////////////////////////////////////
 
 /*
  * This function packs MR x KC block of A each time,
@@ -69,26 +59,6 @@ static void PackB(int n,
 	for (p = 0; p < k; ++p)
 		for (j = 0; j < NR; ++j)
 			*(packed_b++) = *(b_ptr[j]++);
-}
-
-/*
- * Specialized kernel to compute MM
- */
-static void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
-{
-	for (int kr = 0; kr < k; ++kr)
-	{
-		// perform rank-1 update
-		// TODO: fully unroll this
-		for (int x = 0; x < MR; x++)
-		{
-			for (int y = 0; y < NR; y++)
-				C[y * ldc + x] += *(packed_a) * *(packed_b + y);
-			packed_a++;
-		}
-		packed_b += NR;
-	}
-	// TODO: update C in memory in the end
 }
 
 static void MacroKernel(int m, int n, int k, double *packed_a, double *packed_b, double *C, int ldc)

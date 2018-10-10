@@ -3,3 +3,4 @@ main
 /after_step.c
 /my_dgemm.c
 /my_dgemm.h
+/micro_kernel.c
