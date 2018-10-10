@@ -22,7 +22,7 @@
 
 typedef double matrix_t;
 
-inline double GetSecond(struct timeval start, struct timeval end)
+double GetSecond(struct timeval start, struct timeval end)
 {
 	return (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
 }
