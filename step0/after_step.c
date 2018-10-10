@@ -20,20 +20,20 @@ void after_step_gemm(int m,
 	for (j = 0; j < n; j++)
 		for (p = 0; p < k; p++)
 		{
-			// with j and p fixed, b is fixed
 			double* ap = A + p * lda;
 			double* cp = C + j * ldc;
+			// with j and p fixed, b is fixed
 			register double b = B[j * ldb + p];
 			for (i = 0; i < m; i += 8)
 			{
-				*(cp+0) += b * *(ap+0);
-				*(cp+1) += b * *(ap+1);
-				*(cp+2) += b * *(ap+2);
-				*(cp+3) += b * *(ap+3);
-				*(cp+4) += b * *(ap+4);
-				*(cp+5) += b * *(ap+5);
-				*(cp+6) += b * *(ap+6);
-				*(cp+7) += b * *(ap+7);
+				*(cp+0) += *(ap+0) * b;
+				*(cp+1) += *(ap+1) * b;
+				*(cp+2) += *(ap+2) * b;
+				*(cp+3) += *(ap+3) * b;
+				*(cp+4) += *(ap+4) * b;
+				*(cp+5) += *(ap+5) * b;
+				*(cp+6) += *(ap+6) * b;
+				*(cp+7) += *(ap+7) * b;
 				ap += 8; cp += 8;
 			}
 		}
