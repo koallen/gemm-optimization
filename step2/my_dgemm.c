@@ -74,9 +74,9 @@ static void PackB(int n,
 /*
  * Specialized kernel to compute MM
  */
-static void MicroKernel(double *C, double *packed_a, double *packed_b, int ldc)
+static void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 {
-	for (int kr = 0; kr < KC; ++kr)
+	for (int kr = 0; kr < k; ++kr)
 	{
 		// perform rank-1 update
 		// TODO: fully unroll this
@@ -91,6 +91,26 @@ static void MicroKernel(double *C, double *packed_a, double *packed_b, int ldc)
 	// TODO: update C in memory in the end
 }
 
+static void MacroKernel(int m, int n, int k, double *packed_a, double *packed_b, double *C, int ldc)
+{
+	int ir, jr; // used as index
+	int ib, jb; // used as block size
+
+	for (jr = 0; jr < n; jr += NR) // 2nd loop
+	{
+		jb = MIN(n - jr, NR);
+		for (ir = 0; ir < m; ir += MR) // 1st loop
+		{
+			ib = MIN(m - ir, MR);
+			MicroKernel(k,
+				&packed_a[ir * k],
+				&packed_b[jr * k],
+				&C[jr * ldc + ir],
+				ldc);
+		}
+	}
+}
+
 void my_dgemm(int m,
 	int n,
 	int k,
@@ -101,7 +121,7 @@ void my_dgemm(int m,
 	double *C,
 	int ldc)
 {
-	int jc, pc, ic, jr, ir; // used as index
+	int jc, pc, ic; // used as index
 	int i, j; // used as packing index
 	int ib, jb, pb; // used as block size
 
@@ -109,10 +129,10 @@ void my_dgemm(int m,
 	posix_memalign((void**)&packed_a, sizeof(double), MC * KC * sizeof(double));
 	posix_memalign((void**)&packed_b, sizeof(double), KC * NC * sizeof(double));
 
-	for (jc = 0; jc < n; jc += NC)
+	for (jc = 0; jc < n; jc += NC) // 5th loop
 	{
 		jb = MIN(NC, n - jc);
-		for (pc = 0; pc < k; pc += KC)
+		for (pc = 0; pc < k; pc += KC) // 4th loop
 		{
 			pb = MIN(KC, k - pc);
 			// pack B
@@ -125,9 +145,10 @@ void my_dgemm(int m,
 					jc + j,
 					packed_b + j * pb);
 			}
-			for (ic = 0; ic < m; ic += MC)
+			for (ic = 0; ic < m; ic += MC) // 3rd loop
 			{
 				ib = MIN(MC, m - ic);
+				// pack A
 				for (i = 0; i < ib; i += MR)
 				{
 					PackA(MIN(ib - i, MR),
@@ -138,11 +159,7 @@ void my_dgemm(int m,
 						packed_a + i * pb);
 				}
 				// MACRO KERNEL
-				{
-					for (jr = 0; jr < jb; jr += NR)
-						for (ir = 0; ir < ib; ir += MR)
-							MicroKernel(C + (jc + jr) * ldc + (ic + ir), packed_a + ir * KC, packed_b + jr * KC, ldc);
-				}
+				MacroKernel(ib, jb, pb, packed_a, packed_b, &C[jc * ldc + ic], ldc);
 			}
 		}
 	}
