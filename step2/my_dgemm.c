@@ -89,8 +89,9 @@ void my_dgemm(int m,
 	int ib, jb, pb; // used as block size
 
 	double *packed_a = NULL, *packed_b = NULL;
-	posix_memalign((void**)&packed_a, sizeof(double), MC * KC * sizeof(double));
-	posix_memalign((void**)&packed_b, sizeof(double), KC * NC * sizeof(double));
+	// MUST ALIGN 32 BYTES (i.e. 4 DOUBLE)
+	posix_memalign((void**)&packed_a, 4 * sizeof(double), MC * KC * sizeof(double));
+	posix_memalign((void**)&packed_b, 4 * sizeof(double), KC * NC * sizeof(double));
 
 	for (jc = 0; jc < n; jc += NC) // 5th loop
 	{

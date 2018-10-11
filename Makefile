@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-mavx -O3 -fomit-frame-pointer -Wall #-DNDEBUG
+CFLAGS=-O3 -fomit-frame-pointer -Wall #-DNDEBUG
 BLASDIR=/home/koallen/blis
 
 .PHONY: test clean step0 step1 step2
