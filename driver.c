@@ -30,9 +30,9 @@ double GetSecond(struct timeval start, struct timeval end)
 void PrintMatrix(matrix_t* matrix, size_t matrix_size, char* matrix_name)
 {
 	printf("==========Printing matrix %s==========\n", matrix_name);
-	for (int i = 0; i < matrix_size; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
-		for (int j = 0; j < matrix_size; ++j)
+		for (int j = 0; j < 5; ++j)
 			printf("%10.3lf ", matrix[IDX(i,j)]);
 		printf("\n");
 	}
@@ -47,14 +47,16 @@ void GenMatrix(matrix_t* matrix, size_t matrix_size)
 		}
 }
 
-void CheckMatrix(matrix_t* A, matrix_t* B, size_t matrix_size)
+int CheckMatrix(matrix_t* A, matrix_t* B, size_t matrix_size)
 {
 	for (int i = 0; i < matrix_size; ++i)
 		for (int j = 0; j < matrix_size; ++j)
 			if (abs(A[IDX(i, j)] - B[IDX(i, j)]) > EPSILON)
 			{
 				printf("C[%d, %d] differs!\n", i, j);
+				return 1;
 			}
+	return 0;
 }
 
 int main(int argc, char** argv)
@@ -93,7 +95,7 @@ int main(int argc, char** argv)
 			gettimeofday(&ref_start, NULL);
 			cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
 					matrix_size, matrix_size, matrix_size,
-					1.0, A, matrix_size, B, matrix_size, 1.0,
+					1.0, A, matrix_size, B, matrix_size, 0.0,
 					C_ref, matrix_size);
 			gettimeofday(&ref_end, NULL);
 			ref_time += GetSecond(ref_start, ref_end);
@@ -118,11 +120,14 @@ int main(int argc, char** argv)
 		double flops = (matrix_size * matrix_size / (1000.0 * 1000.0 * 1000.0)) * (2 * matrix_size);
 		printf("%5zd\t %5.2lf\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / after_time, flops / ref_time);
 
-		// validate the result
-		CheckMatrix(C_ref, C_opt, matrix_size);
 #ifndef NDEBUG
-		PrintMatrix(C_ref, matrix_size, "C ref");
-		PrintMatrix(C_opt, matrix_size, "C opt");
+		// validate the result
+		if (CheckMatrix(C_ref, C_opt, matrix_size))
+		{
+			PrintMatrix(C_ref, matrix_size, "C ref");
+			PrintMatrix(C_opt, matrix_size, "C opt");
+			return 0;
+		}
 #endif
 	}
 }
