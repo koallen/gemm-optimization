@@ -8,7 +8,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	uint64_t k_iter = k / 4;
 	uint64_t k_left = k % 4;
 	uint64_t rs_c = 1;
-	uint64_t cs_c = ldc;
+	uint64_t cs_c = ldc * sizeof(double);
 
 	__asm__ volatile
 	(
@@ -23,7 +23,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd -3 * 32 (%%rax), %%ymm1      \n\t"
 	
 	"movq %4, %%rcx                       \n\t"
-	// TODO: add cs_c etc...
+	"movq %6, %%rdi                       \n\t"
 
 	"movq %0, %%rsi                       \n\t" // i = k_iter
 	"testq %%rsi, %%rsi                   \n\t"
@@ -131,8 +131,8 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"addq $4 * 8 * 8, %%rax               \n\t" // increment address of A
 	"addq $4 * 6 * 8, %%rbx               \n\t" // increment address of B
 
-	"vmovaps -4 * 32(%%rax), %%ymm0       \n\t" // load 8 elements from A
-	"vmovaps -3 * 32(%%rax), %%ymm1       \n\t"
+	"vmovapd -4 * 32(%%rax), %%ymm0       \n\t" // load 8 elements from A
+	"vmovapd -3 * 32(%%rax), %%ymm1       \n\t"
 
 	"decq %%rsi                           \n\t" // i -= 1
 	"jne .DKITER                          \n\t" // if i != 0, loop again
@@ -168,15 +168,32 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"addq $1 * 8 * 8, %%rax               \n\t" // increment address of A
 	"addq $1 * 6 * 8, %%rbx               \n\t" // increment address of B
 
-	"vmovaps -4 * 32(%%rax), %%ymm0       \n\t" // load 8 elements from A
-	"vmovaps -3 * 32(%%rax), %%ymm1       \n\t"
+	"vmovapd -4 * 32(%%rax), %%ymm0       \n\t" // load 8 elements from A
+	"vmovapd -3 * 32(%%rax), %%ymm1       \n\t"
 
 	"decq %%rsi                           \n\t" // i -= 1
 	"jne .DKLEFT                          \n\t" // if i != 0, loop again
 
 	".DPOSTACCUM:                         \n\t" // STORE RESULT TO C
 
-	".DDONE:                              \n\t"
+	"vmovapd %%ymm4,  0  * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm5,  1  * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx              \n\t"
+	"vmovapd %%ymm6,  0  * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm7,  1  * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx              \n\t"
+	"vmovapd %%ymm8,  0  * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm9,  1  * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx              \n\t"
+	"vmovapd %%ymm10, 0  * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm11, 1  * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx              \n\t"
+	"vmovapd %%ymm12, 0  * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm13, 1  * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx              \n\t"
+	"vmovapd %%ymm14, 0 * 32(%%rcx)      \n\t"
+	"vmovapd %%ymm15, 1 * 32(%%rcx)      \n\t"
+
 	: // output operands
 	: // input operands
 	  "m" (k_iter),   // 0

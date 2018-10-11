@@ -63,15 +63,14 @@ int main(int argc, char** argv)
 {
 	srand48(time(NULL));
 	// TODO: allocate cache line aligned matrices
-	int ret;
 	matrix_t* A = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_ref = NULL;
-	ret = posix_memalign((void**)&C_ref, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	posix_memalign((void**)&C_ref, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_opt = NULL;
-	ret = posix_memalign((void**)&C_opt, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	posix_memalign((void**)&C_opt, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_after = NULL;
-	ret = posix_memalign((void**)&C_after, sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	posix_memalign((void**)&C_after,  4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	GenMatrix(A, MAX_SIZE);
 	GenMatrix(B, MAX_SIZE);
 
@@ -79,10 +78,6 @@ int main(int argc, char** argv)
 	printf("  MNK\t   OPT \t AFTER \t   REF\n");
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
-#ifndef NDEBUG
-		PrintMatrix(A, matrix_size, "A");
-		PrintMatrix(B, matrix_size, "B");
-#endif
 		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
 		memset(C_ref, 0, matrix_size * matrix_size * sizeof(matrix_t));
 		memset(C_opt, 0, matrix_size * matrix_size * sizeof(matrix_t));
@@ -124,6 +119,8 @@ int main(int argc, char** argv)
 		// validate the result
 		if (CheckMatrix(C_ref, C_opt, matrix_size))
 		{
+			PrintMatrix(A, matrix_size, "A");
+			PrintMatrix(B, matrix_size, "B");
 			PrintMatrix(C_ref, matrix_size, "C ref");
 			PrintMatrix(C_opt, matrix_size, "C opt");
 			return 0;
