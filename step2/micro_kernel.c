@@ -14,16 +14,16 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	(
 	"vzeroall                             \n\t"
 	"                                     \n\t"
-	"movq %2, %%rax                       \n\t"
-	"movq %3, %%rbx                       \n\t"
+	"movq %2, %%rax                       \n\t" // load address of packed A
+	"movq %3, %%rbx                       \n\t" // load address of packed B
 
 	"addq $32 * 4, %%rax                  \n\t"
 
 	"vmovapd -4 * 32 (%%rax), %%ymm0      \n\t" // load 8 elements from A
 	"vmovapd -3 * 32 (%%rax), %%ymm1      \n\t"
 	
-	"movq %4, %%rcx                       \n\t"
-	"movq %6, %%rdi                       \n\t"
+	"movq %4, %%rcx                       \n\t" // load address of C
+	"movq %6, %%rdi                       \n\t" // load ldc * 8 (stripe)
 
 	"movq %0, %%rsi                       \n\t" // i = k_iter
 	"testq %%rsi, %%rsi                   \n\t"
@@ -178,21 +178,21 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 
 	"vmovapd %%ymm4,  0  * 32(%%rcx)      \n\t"
 	"vmovapd %%ymm5,  1  * 32(%%rcx)      \n\t"
-	"addq %%rdi, %%rcx              \n\t"
+	"addq %%rdi, %%rcx                    \n\t"
 	"vmovapd %%ymm6,  0  * 32(%%rcx)      \n\t"
 	"vmovapd %%ymm7,  1  * 32(%%rcx)      \n\t"
-	"addq %%rdi, %%rcx              \n\t"
+	"addq %%rdi, %%rcx                    \n\t"
 	"vmovapd %%ymm8,  0  * 32(%%rcx)      \n\t"
 	"vmovapd %%ymm9,  1  * 32(%%rcx)      \n\t"
-	"addq %%rdi, %%rcx              \n\t"
+	"addq %%rdi, %%rcx                    \n\t"
 	"vmovapd %%ymm10, 0  * 32(%%rcx)      \n\t"
 	"vmovapd %%ymm11, 1  * 32(%%rcx)      \n\t"
-	"addq %%rdi, %%rcx              \n\t"
+	"addq %%rdi, %%rcx                    \n\t"
 	"vmovapd %%ymm12, 0  * 32(%%rcx)      \n\t"
 	"vmovapd %%ymm13, 1  * 32(%%rcx)      \n\t"
-	"addq %%rdi, %%rcx              \n\t"
-	"vmovapd %%ymm14, 0 * 32(%%rcx)      \n\t"
-	"vmovapd %%ymm15, 1 * 32(%%rcx)      \n\t"
+	"addq %%rdi, %%rcx                    \n\t"
+	"vmovapd %%ymm14, 0 * 32(%%rcx)       \n\t"
+	"vmovapd %%ymm15, 1 * 32(%%rcx)       \n\t"
 
 	: // output operands
 	: // input operands

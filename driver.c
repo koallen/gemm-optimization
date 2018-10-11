@@ -11,7 +11,7 @@
 
 #include "my_dgemm.h"
 
-#define IDX(i, j) (i * matrix_size + j)
+#define IDX(i, j) (j * matrix_size + i)
 
 #define MIN_SIZE 48
 #define MAX_SIZE 768
@@ -42,9 +42,14 @@ void GenMatrix(matrix_t* matrix, size_t matrix_size)
 {
 	for (int i = 0; i < matrix_size; ++i)
 		for (int j = 0; j < matrix_size; ++j)
-		{
 			matrix[IDX(i,j)] = (matrix_t)(drand48());
-		}
+}
+
+void SetMatrix(matrix_t* matrix, size_t matrix_size, matrix_t val)
+{
+	for (int i = 0; i < matrix_size; ++i)
+		for (int j = 0; j < matrix_size; ++j)
+			matrix[IDX(i,j)] = val;
 }
 
 int CheckMatrix(matrix_t* A, matrix_t* B, size_t matrix_size)
@@ -79,9 +84,9 @@ int main(int argc, char** argv)
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
 		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
-		memset(C_ref, 0, matrix_size * matrix_size * sizeof(matrix_t));
-		memset(C_opt, 0, matrix_size * matrix_size * sizeof(matrix_t));
-		memset(C_after, 0, matrix_size * matrix_size * sizeof(matrix_t));
+		SetMatrix(C_ref, matrix_size, 0.0);
+		SetMatrix(C_opt, matrix_size, 0.0);
+		SetMatrix(C_after, matrix_size, 0.0);
 
 		// call the GEMM routine
 		for (int rep = 0; rep < REPETITIONS; ++rep)
