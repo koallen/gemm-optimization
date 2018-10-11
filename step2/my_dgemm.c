@@ -105,7 +105,7 @@ void my_dgemm(int m,
 				PackB(MIN(jb - j, NR),
 					pb,
 					B + pc,
-					k,
+					ldb,
 					jc + j,
 					packed_b + j * pb);
 			}
@@ -118,7 +118,7 @@ void my_dgemm(int m,
 					PackA(MIN(ib - i, MR),
 						pb,
 						A + pc * lda,
-						m,
+						lda,
 						ic + i,
 						packed_a + i * pb);
 				}

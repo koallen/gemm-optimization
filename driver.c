@@ -11,12 +11,12 @@
 
 #include "my_dgemm.h"
 
-#define IDX(i, j) (j * matrix_size + i)
-
 #define MIN_SIZE 48
 #define MAX_SIZE 768
 #define STEP 48
 #define REPETITIONS 3
+
+#define IDX(i, j) (j * MAX_SIZE + i)
 
 #define EPSILON 1e-10
 
@@ -42,7 +42,10 @@ void GenMatrix(matrix_t* matrix, size_t matrix_size)
 {
 	for (int i = 0; i < matrix_size; ++i)
 		for (int j = 0; j < matrix_size; ++j)
-			matrix[IDX(i,j)] = (matrix_t)(drand48());
+		{
+			//matrix[IDX(i,j)] = (matrix_t)(drand48());
+			matrix[IDX(i,j)] = (matrix_t)(i + j);
+		}
 }
 
 void SetMatrix(matrix_t* matrix, size_t matrix_size, matrix_t val)
@@ -84,9 +87,9 @@ int main(int argc, char** argv)
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
 		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
-		SetMatrix(C_ref, matrix_size, 0.0);
-		SetMatrix(C_opt, matrix_size, 0.0);
-		SetMatrix(C_after, matrix_size, 0.0);
+		SetMatrix(C_ref, MAX_SIZE, 0.0);
+		SetMatrix(C_opt, MAX_SIZE, 0.0);
+		SetMatrix(C_after, MAX_SIZE, 0.0);
 
 		// call the GEMM routine
 		for (int rep = 0; rep < REPETITIONS; ++rep)
@@ -95,22 +98,22 @@ int main(int argc, char** argv)
 			gettimeofday(&ref_start, NULL);
 			cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
 					matrix_size, matrix_size, matrix_size,
-					1.0, A, matrix_size, B, matrix_size, 0.0,
-					C_ref, matrix_size);
+					1.0, A, MAX_SIZE, B, MAX_SIZE, 0.0,
+					C_ref, MAX_SIZE);
 			gettimeofday(&ref_end, NULL);
 			ref_time += GetSecond(ref_start, ref_end);
 
 			struct timeval after_start, after_end;
 			gettimeofday(&after_start, NULL);
 			after_step_gemm(matrix_size, matrix_size, matrix_size,
-					A, matrix_size, B, matrix_size, C_after, matrix_size);
+					A, MAX_SIZE, B, MAX_SIZE, C_after, MAX_SIZE);
 			gettimeofday(&after_end, NULL);
 			after_time += GetSecond(after_start, after_end);
 
 			struct timeval opt_start, opt_end;
 			gettimeofday(&opt_start, NULL);
 			my_dgemm(matrix_size, matrix_size, matrix_size,
-					A, matrix_size, B, matrix_size, C_opt, matrix_size);
+					A, MAX_SIZE, B, MAX_SIZE, C_opt, MAX_SIZE);
 			gettimeofday(&opt_end, NULL);
 			opt_time += GetSecond(opt_start, opt_end);
 		}
