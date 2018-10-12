@@ -12,9 +12,9 @@
 #include "aux.h"
 #include "my_dgemm.h"
 
-#define MIN_SIZE 48
-#define MAX_SIZE 768
-#define STEP 48
+#define MIN_SIZE 32
+#define MAX_SIZE 1024
+#define STEP 32
 #define REPETITIONS 3
 
 #define IDX(i, j) (j * MAX_SIZE + i)
@@ -43,10 +43,7 @@ void GenMatrix(matrix_t* matrix, size_t matrix_size)
 {
 	for (int i = 0; i < matrix_size; ++i)
 		for (int j = 0; j < matrix_size; ++j)
-		{
-			//matrix[IDX(i,j)] = (matrix_t)(drand48());
-			matrix[IDX(i,j)] = (matrix_t)(i + j);
-		}
+			matrix[IDX(i,j)] = (matrix_t)(drand48());
 }
 
 void SetMatrix(matrix_t* matrix, size_t matrix_size, matrix_t val)
@@ -71,14 +68,12 @@ int CheckMatrix(matrix_t* A, matrix_t* B, size_t matrix_size)
 int main(int argc, char** argv)
 {
 	srand48(time(NULL));
-	// TODO: allocate cache line aligned matrices
-	matrix_t* A = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
-	matrix_t* B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
-	matrix_t* C_ref = NULL;
+
+	matrix_t *A = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t *B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	matrix_t *C_ref = NULL, *C_opt = NULL, *C_after = NULL;
 	SAFE_MALLOC(posix_memalign((void**)&C_ref, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
-	matrix_t* C_opt = NULL;
 	SAFE_MALLOC(posix_memalign((void**)&C_opt, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
-	matrix_t* C_after = NULL;
 	SAFE_MALLOC(posix_memalign((void**)&C_after,  4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
 	GenMatrix(A, MAX_SIZE);
 	GenMatrix(B, MAX_SIZE);
@@ -125,8 +120,8 @@ int main(int argc, char** argv)
 		double flops = (matrix_size * matrix_size / (1000.0 * 1000.0 * 1000.0)) * (2 * matrix_size);
 		printf("%5zd\t %5.2lf\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / after_time, flops / ref_time);
 
-		int different = CheckMatrix(C_ref, C_opt, matrix_size);
 		// validate the result
+		int different = CheckMatrix(C_ref, C_opt, matrix_size);
 		if (different)
 		{
 			printf("Your implementation produces wrong result!\n");
