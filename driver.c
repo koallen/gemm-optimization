@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 		// validate the result
 		if (different)
 		{
-			printf("Your implementation procudes wrong result!\n");
+			printf("Your implementation produces wrong result!\n");
 #ifndef NDEBUG
 			PrintMatrix(A, matrix_size, "A");
 			PrintMatrix(B, matrix_size, "B");
