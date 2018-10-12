@@ -31,7 +31,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 
 	".DKITER:                               \n\t" // MAIN LOOP
 
-        "                                       \n\t" // iteration 0
+	"                                       \n\t" // iteration 0
 	"vbroadcastsd 0 * 8(%%rbx), %%ymm2      \n\t"
 	"vbroadcastsd 1 * 8(%%rbx), %%ymm3      \n\t"
 	"vfmadd231pd %%ymm0, %%ymm2, %%ymm4     \n\t" // a[0-3] * b[0]
@@ -56,7 +56,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd -2 * 32(%%rax), %%ymm0         \n\t" // load 8 elements from A
 	"vmovapd -1 * 32(%%rax), %%ymm1         \n\t"
 
-        "                                       \n\t" // iteration 1
+	"                                       \n\t" // iteration 1
 	"vbroadcastsd 6 * 8(%%rbx), %%ymm2      \n\t"
 	"vbroadcastsd 7 * 8(%%rbx), %%ymm3      \n\t"
 	"vfmadd231pd %%ymm0, %%ymm2, %%ymm4     \n\t" // a[0-3] * b[0]
@@ -81,7 +81,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd 0 * 32(%%rax), %%ymm0          \n\t" // load 8 elements from A
 	"vmovapd 1 * 32(%%rax), %%ymm1          \n\t"
 
-        "                                       \n\t" // iteration 2
+	"                                       \n\t" // iteration 2
 	"vbroadcastsd 12 * 8(%%rbx), %%ymm2     \n\t"
 	"vbroadcastsd 13 * 8(%%rbx), %%ymm3     \n\t"
 	"vfmadd231pd %%ymm0, %%ymm2, %%ymm4     \n\t" // a[0-3] * b[0]
@@ -106,7 +106,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd 2 * 32(%%rax), %%ymm0          \n\t" // load 8 elements from A
 	"vmovapd 3 * 32(%%rax), %%ymm1          \n\t"
 
-        "                                       \n\t" // iteration 3
+	"                                       \n\t" // iteration 3
 	"vbroadcastsd 18 * 8(%%rbx), %%ymm2     \n\t"
 	"vbroadcastsd 19 * 8(%%rbx), %%ymm3     \n\t"
 	"vfmadd231pd %%ymm0, %%ymm2, %%ymm4     \n\t" // a[0-3] * b[0]
@@ -137,7 +137,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"decq %%rsi                             \n\t" // i -= 1
 	"jne .DKITER                            \n\t" // if i != 0, loop again
 
-        ".DCONSIDERKLEFT:                       \n\t"
+	".DCONSIDERKLEFT:                       \n\t"
 	"movq %1, %%rsi                         \n\t" // i = k_left
 	"testq %%rsi, %%rsi                     \n\t"
 	"je .DPOSTACCUM                         \n\t"

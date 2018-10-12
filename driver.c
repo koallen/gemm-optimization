@@ -124,9 +124,10 @@ int main(int argc, char** argv)
 		double flops = (matrix_size * matrix_size / (1000.0 * 1000.0 * 1000.0)) * (2 * matrix_size);
 		printf("%5zd\t %5.2lf\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / after_time, flops / ref_time);
 
+		int different = CheckMatrix(C_ref, C_opt, matrix_size);
 #ifndef NDEBUG
 		// validate the result
-		if (CheckMatrix(C_ref, C_opt, matrix_size))
+		if (different)
 		{
 			PrintMatrix(A, matrix_size, "A");
 			PrintMatrix(B, matrix_size, "B");
