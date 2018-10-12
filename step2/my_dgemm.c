@@ -23,10 +23,12 @@ static void PackA(int m,
 	int i, p;
 	double *a_ptr[MR];
 
+	// sometimes m may be less than MR
+	// we need to fill the packed till MR size
 	for (i = 0; i < m; ++i)
 		a_ptr[i] = A + offset_a + i;
 	for (i = m; i < MR; ++i)
-		a_ptr[i] = A + offset_a + 0; // if m smaller than MR, fill with same data
+		a_ptr[i] = A + offset_a + 0;
 
 	for (p = 0; p < k; ++p)
 		for (i = 0; i < MR; ++i)
@@ -51,6 +53,8 @@ static void PackB(int n,
 	int j, p;
 	double *b_ptr[NR];
 
+	// sometimes n may be less than NR
+	// we need to fill the packed till NR size
 	for (j = 0; j < n; ++j)
 		b_ptr[j] = B + ldb * (offset_b + j);
 	for (j = n; j < NR; ++j)
@@ -67,11 +71,13 @@ static void MacroKernel(int m, int n, int k, double *packed_a, double *packed_b,
 
 	for (jr = 0; jr < n; jr += NR) // 2nd loop
 		for (ir = 0; ir < m; ir += MR) // 1st loop
+		{
 			MicroKernel(k,
 				&packed_a[ir * k],
 				&packed_b[jr * k],
 				&C[jr * ldc + ir],
 				ldc);
+		}
 }
 
 void my_dgemm(int m,

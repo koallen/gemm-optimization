@@ -87,13 +87,14 @@ int main(int argc, char** argv)
 	for (matrix_size = MIN_SIZE; matrix_size <= MAX_SIZE; matrix_size += STEP)
 	{
 		double ref_time = 0.0, opt_time = 0.0, after_time = 0.0;
-		SetMatrix(C_ref, MAX_SIZE, 0.0);
-		SetMatrix(C_opt, MAX_SIZE, 0.0);
-		SetMatrix(C_after, MAX_SIZE, 0.0);
 
 		// call the GEMM routine
 		for (int rep = 0; rep < REPETITIONS; ++rep)
 		{
+			SetMatrix(C_ref, MAX_SIZE, 0.0);
+			SetMatrix(C_opt, MAX_SIZE, 0.0);
+			SetMatrix(C_after, MAX_SIZE, 0.0);
+
 			struct timeval ref_start, ref_end;
 			gettimeofday(&ref_start, NULL);
 			cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
