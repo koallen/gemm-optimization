@@ -7,8 +7,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 {
 	uint64_t k_iter = k / 4;
 	uint64_t k_left = k % 4;
-	uint64_t rs_c = 1;
-	uint64_t cs_c = ldc * sizeof(double);
+	uint64_t cs_c = ldc * sizeof(double); // stripe of C column in bytes
 
 	__asm__ volatile
 	(
@@ -23,7 +22,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd -3 * 32 (%%rax), %%ymm1        \n\t"
 	
 	"movq %4, %%rcx                         \n\t" // load address of C
-	"movq %6, %%rdi                         \n\t" // load ldc * 8 (stripe)
+	"movq %5, %%rdi                         \n\t" // load ldc * 8 (stripe)
 
 	"movq %0, %%rsi                         \n\t" // i = k_iter
 	"testq %%rsi, %%rsi                     \n\t"
@@ -218,15 +217,13 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	  "m" (packed_a), // 2
 	  "m" (packed_b), // 3
 	  "m" (C),        // 4
-	  "m" (rs_c),     // 5
-	  "m" (cs_c)      // 6
+	  "m" (cs_c)      // 5
 	: // register clobber list
-	  "rax", "rbx", "rcx", "rdx", "rsi", "rdi",
-	  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-          "xmm0", "xmm1", "xmm2", "xmm3",
-          "xmm4", "xmm5", "xmm6", "xmm7",
-          "xmm8", "xmm9", "xmm10", "xmm11",
-          "xmm12", "xmm13", "xmm14", "xmm15",
+	  "rax", "rbx", "rcx", "rsi", "rdi",
+          "ymm0", "ymm1", "ymm2", "ymm3",
+          "ymm4", "ymm5", "ymm6", "ymm7",
+          "ymm8", "ymm9", "ymm10", "ymm11",
+          "ymm12", "ymm13", "ymm14", "ymm15",
           "memory"
 	);
 }
