@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <string.h>
 
+#include "aux.h"
 #include "my_dgemm.h"
 
 #define MIN_SIZE 48
@@ -74,11 +75,11 @@ int main(int argc, char** argv)
 	matrix_t* A = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* B = (matrix_t*)malloc(MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
 	matrix_t* C_ref = NULL;
-	posix_memalign((void**)&C_ref, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	SAFE_MALLOC(posix_memalign((void**)&C_ref, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
 	matrix_t* C_opt = NULL;
-	posix_memalign((void**)&C_opt, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	SAFE_MALLOC(posix_memalign((void**)&C_opt, 4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
 	matrix_t* C_after = NULL;
-	posix_memalign((void**)&C_after,  4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t));
+	SAFE_MALLOC(posix_memalign((void**)&C_after,  4 * sizeof(matrix_t), MAX_SIZE * MAX_SIZE * sizeof(matrix_t)));
 	GenMatrix(A, MAX_SIZE);
 	GenMatrix(B, MAX_SIZE);
 
@@ -125,16 +126,17 @@ int main(int argc, char** argv)
 		printf("%5zd\t %5.2lf\t %5.2lf\t %5.2lf\n", matrix_size, flops / opt_time, flops / after_time, flops / ref_time);
 
 		int different = CheckMatrix(C_ref, C_opt, matrix_size);
-#ifndef NDEBUG
 		// validate the result
 		if (different)
 		{
+			printf("Your implementation procudes wrong result!\n");
+#ifndef NDEBUG
 			PrintMatrix(A, matrix_size, "A");
 			PrintMatrix(B, matrix_size, "B");
 			PrintMatrix(C_ref, matrix_size, "C ref");
 			PrintMatrix(C_opt, matrix_size, "C opt");
-			return 0;
-		}
 #endif
+			return 1;
+		}
 	}
 }

@@ -2,6 +2,7 @@
  * DGEMM following the Goto approach
  */
 #include <stdlib.h>
+#include "aux.h"
 #include "my_dgemm.h"
 #include "micro_kernel.c"
 
@@ -96,8 +97,8 @@ void my_dgemm(int m,
 
 	double *packed_a = NULL, *packed_b = NULL;
 	// MUST ALIGN 32 BYTES (i.e. 4 DOUBLE)
-	posix_memalign((void**)&packed_a, 4 * sizeof(double), MC * KC * sizeof(double));
-	posix_memalign((void**)&packed_b, 4 * sizeof(double), KC * NC * sizeof(double));
+	SAFE_MALLOC(posix_memalign((void**)&packed_a, 4 * sizeof(double), MC * KC * sizeof(double)));
+	SAFE_MALLOC(posix_memalign((void**)&packed_b, 4 * sizeof(double), KC * NC * sizeof(double)));
 
 	for (jc = 0; jc < n; jc += NC) // 5th loop
 	{
