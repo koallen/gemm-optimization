@@ -12,9 +12,9 @@
 #include "aux.h"
 #include "my_dgemm.h"
 
-#define MIN_SIZE 32
-#define MAX_SIZE 1024
-#define STEP 32
+#define MIN_SIZE 48
+#define MAX_SIZE 768
+#define STEP 48
 #define REPETITIONS 3
 
 #define IDX(i, j) (j * MAX_SIZE + i)
