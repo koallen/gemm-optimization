@@ -24,12 +24,23 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"movq %4, %%rcx                         \n\t" // load address of C
 	"movq %5, %%rdi                         \n\t" // load ldc * 8 (stripe)
 
+	"leaq (%%rdi, %%rdi, 2) , %%r13         \n\t"
+	"leaq (%%rcx, %%r13, 1) , %%rdx         \n\t" // rdx stores C + 3 * ldc
+
+	"prefetcht0 7 * 8(%%rcx)                \n\t" // prefetch all 6 columns of C
+	"prefetcht0 7 * 8(%%rcx, %%rdi)         \n\t"
+	"prefetcht0 7 * 8(%%rcx, %%rdi, 2)      \n\t"
+	"prefetcht0 7 * 8(%%rdx)                \n\t"
+	"prefetcht0 7 * 8(%%rdx, %%rdi)         \n\t"
+	"prefetcht0 7 * 8(%%rdx, %%rdi, 2)      \n\t"
+
 	"movq %0, %%rsi                         \n\t" // i = k_iter
 	"testq %%rsi, %%rsi                     \n\t"
 	"je .DCONSIDERKLEFT                     \n\t"
 
 	".DKITER:                               \n\t" // MAIN LOOP
 
+	"prefetcht0 64 * 8(%%rax)               \n\t" // prefetch packed A
 	"                                       \n\t" // iteration 0
 	"vbroadcastsd 0 * 8(%%rbx), %%ymm2      \n\t"
 	"vbroadcastsd 1 * 8(%%rbx), %%ymm3      \n\t"
@@ -80,6 +91,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	"vmovapd 0 * 32(%%rax), %%ymm0          \n\t" // load 8 elements from A
 	"vmovapd 1 * 32(%%rax), %%ymm1          \n\t"
 
+	"prefetcht0 40 * 16(%%rax)              \n\t" // prefetch packed A
 	"                                       \n\t" // iteration 2
 	"vbroadcastsd 12 * 8(%%rbx), %%ymm2     \n\t"
 	"vbroadcastsd 13 * 8(%%rbx), %%ymm3     \n\t"
@@ -143,6 +155,7 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 
 	".DKLEFT:                               \n\t" // EDGE CASE (k % 4 != 0)
 
+	"prefetcht0 64 * 8(%%rax)               \n\t" // prefetch packed A
 	"vbroadcastsd 0 * 8(%%rbx), %%ymm2      \n\t"
 	"vbroadcastsd 1 * 8(%%rbx), %%ymm3      \n\t"
 	"vfmadd231pd %%ymm0, %%ymm2, %%ymm4     \n\t" // a[0-3] * b[0]
@@ -219,11 +232,12 @@ void MicroKernel(int k, double *packed_a, double *packed_b, double *C, int ldc)
 	  "m" (C),        // 4
 	  "m" (cs_c)      // 5
 	: // register clobber list
-	  "rax", "rbx", "rcx", "rsi", "rdi",
-          "ymm0", "ymm1", "ymm2", "ymm3",
-          "ymm4", "ymm5", "ymm6", "ymm7",
-          "ymm8", "ymm9", "ymm10", "ymm11",
-          "ymm12", "ymm13", "ymm14", "ymm15",
-          "memory"
+	  "rax", "rbx", "rcx", "rdx", "rsi", "rdi",
+	  "r13",
+	  "ymm0", "ymm1", "ymm2", "ymm3",
+	  "ymm4", "ymm5", "ymm6", "ymm7",
+	  "ymm8", "ymm9", "ymm10", "ymm11",
+	  "ymm12", "ymm13", "ymm14", "ymm15",
+	  "memory"
 	);
 }
